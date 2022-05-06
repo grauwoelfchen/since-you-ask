@@ -129,13 +129,17 @@ mod test {
             let mut origins: HashMap<&str, Result<String, env::VarError>> =
                 HashMap::new();
 
-            for (key, value) in vars.iter() {
+            for key in keys.split('\n') {
+                if key.is_empty() {
+                    continue;
+                }
+
                 origins.insert(key, env::var(key));
 
-                if !keys.split('\n').any(|x| &x == key) {
+                if !vars.contains_key(key) {
                     env::remove_var(key);
                 } else {
-                    env::set_var(key, value);
+                    env::set_var(key, vars.get(key).unwrap());
                 }
             }
 
@@ -163,7 +167,7 @@ PORT
             vars,
             || {
                 let addr = get_local_addr();
-                assert_eq!("0.0.0.0:3000", addr);
+                assert_eq!(addr, "0.0.0.0:3000");
             },
         );
     }
@@ -183,7 +187,7 @@ PORT
             vars,
             || {
                 let addr = get_local_addr();
-                assert_eq!("127.0.0.1:8000", addr);
+                assert_eq!(addr, "127.0.0.1:8000");
             },
         );
     }
